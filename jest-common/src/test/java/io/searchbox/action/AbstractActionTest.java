@@ -206,7 +206,7 @@ public class AbstractActionTest {
         Index index = new Index.Builder("{\"abc\":\"dce\"}").index("test").build();
         JestResult result = index.createNewElasticSearchResult(jsonString, 400, null, new Gson());
         assertFalse(result.isSucceeded());
-        assertEquals("Invalid index", result.getErrorMessage());
+        assertEquals("\"Invalid index\"", result.getErrorMessage());
     }
 
     @Test
@@ -223,7 +223,7 @@ public class AbstractActionTest {
         assertTrue(result.getErrorMessage(), result.isSucceeded());
     }
 
-    //TODO: This cannot be derived fron the result anymore
+    //TODO: This cannot be derived from the result anymore
     @Test
     public void getFailedDeleteResult() {
         String jsonString = "{\n" +

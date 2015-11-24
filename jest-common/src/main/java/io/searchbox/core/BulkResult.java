@@ -7,7 +7,6 @@ import io.searchbox.client.JestResult;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +95,7 @@ public class BulkResult extends JestResult {
             this.type = values.get("_type").getAsString();
             this.id = values.get("_id").getAsString();
             this.status = values.get("status").getAsInt();
-            this.error = values.has("error") ? values.get("error").getAsString() : null;
+            this.error = values.has("error") ? values.get("error").toString() : null;
         }
 
         @Override

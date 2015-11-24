@@ -39,7 +39,7 @@ Add Jest as a dependency to your project.
 <dependency>
   <groupId>io.searchbox</groupId>
   <artifactId>jest</artifactId>
-  <version>0.1.6</version>
+  <version>2.0.0</version>
 </dependency>
 ```
 
@@ -73,7 +73,7 @@ Add Jest snapshot as a dependency to your project.
 <dependency>
   <groupId>io.searchbox</groupId>
   <artifactId>jest</artifactId>
-  <version>0.1.7-SNAPSHOT</version>
+  <version>2.0.1-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -113,17 +113,17 @@ String settings = "\"settings\" : {\n" +
                 "        \"number_of_replicas\" : 1\n" +
                 "    }\n";
 
-client.execute(new CreateIndex.Builder("articles").settings(ImmutableSettings.builder().loadFromSource(settings).build().getAsMap()).build());
+client.execute(new CreateIndex.Builder("articles").settings(Settings.builder().loadFromSource(settings).build().getAsMap()).build());
 ```
 
 * using the `SettingsBuilder` helper class from Elasticsearch:
 
 ``` java
-import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 .
 .
 
-ImmutableSettings.Builder settingsBuilder = ImmutableSettings.settingsBuilder();
+Settings.Builder settingsBuilder = Settings.settingsBuilder();
 settings.put("number_of_shards",5);
 settings.put("number_of_replicas",1);
 
@@ -191,7 +191,7 @@ String source = jsonBuilder()
 as Map;
 
 ``` java
-Map<String, String> source = new LinkedHashMap<String,String>()
+Map<String, String> source = new LinkedHashMap<String,String>();
 source.put("user", "kimchy");
 ```
 

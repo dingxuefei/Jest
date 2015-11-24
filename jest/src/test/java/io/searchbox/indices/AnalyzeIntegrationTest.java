@@ -6,7 +6,7 @@ import io.searchbox.action.Action;
 import io.searchbox.client.JestResult;
 import io.searchbox.common.AbstractIntegrationTest;
 import org.apache.commons.io.FileUtils;
-import org.elasticsearch.test.ElasticsearchIntegrationTest;
+import org.elasticsearch.test.ESIntegTestCase;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,7 +18,7 @@ import java.net.URISyntaxException;
 /**
  * @author cihat keser
  */
-@ElasticsearchIntegrationTest.ClusterScope(scope = ElasticsearchIntegrationTest.Scope.SUITE, numDataNodes = 1)
+@ESIntegTestCase.ClusterScope(scope = ESIntegTestCase.Scope.SUITE, numDataNodes = 1)
 public class AnalyzeIntegrationTest extends AbstractIntegrationTest {
 
     private static String sample_book;
@@ -40,7 +40,7 @@ public class AnalyzeIntegrationTest extends AbstractIntegrationTest {
     public void testWithAnalyzer() throws IOException {
         Action action = new Analyze.Builder()
                 .analyzer("standard")
-                .source(sample_book)
+                .text(sample_book)
                 .build();
         expectTokens(action, 22);
     }
@@ -49,7 +49,7 @@ public class AnalyzeIntegrationTest extends AbstractIntegrationTest {
     public void testWithAnalyzerWithTextFormat() throws IOException {
         Action action = new Analyze.Builder()
                 .analyzer("standard")
-                .source(sample_book)
+                .text(sample_book)
                 .format("text")
                 .build();
         JestResult result = client.execute(action);
@@ -66,7 +66,7 @@ public class AnalyzeIntegrationTest extends AbstractIntegrationTest {
         Action action = new Analyze.Builder()
                 .tokenizer("keyword")
                 .filter("lowercase")
-                .source(sample_book)
+                .text(sample_book)
                 .build();
         expectTokens(action, 1);
     }

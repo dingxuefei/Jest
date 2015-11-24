@@ -11,7 +11,7 @@ import org.apache.lucene.search.Explanation;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.test.ElasticsearchIntegrationTest;
+import org.elasticsearch.test.ESIntegTestCase;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * @author Dogukan Sonmez
  */
-@ElasticsearchIntegrationTest.ClusterScope(scope = ElasticsearchIntegrationTest.Scope.SUITE, numDataNodes = 1)
+@ESIntegTestCase.ClusterScope(scope = ESIntegTestCase.Scope.SUITE, numDataNodes = 1)
 public class SearchIntegrationTest extends AbstractIntegrationTest {
 
     private static final String INDEX = "twitter";
@@ -141,7 +141,7 @@ public class SearchIntegrationTest extends AbstractIntegrationTest {
                 "    \"explain\": true,\n" +
                 "    \"query\":{\n" +
                 "        \"query_string\":{\n" +
-                "            \"query\":\"pickles\"\n" +
+                "            \"query\":\"name:pickles\"\n" +
                 "        }\n" +
                 "    },\n" +
                 "   \"highlight\" : {\n" +
@@ -179,7 +179,7 @@ public class SearchIntegrationTest extends AbstractIntegrationTest {
                 "        }\n" +
                 "    }\n" +
                 "}")
-                .setSearchType(SearchType.QUERY_AND_FETCH)
+                .setSearchType(SearchType.QUERY_THEN_FETCH)
                 .addIndex("articles")
                 .addType("article")
                 .build();

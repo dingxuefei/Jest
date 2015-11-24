@@ -5,7 +5,7 @@ import io.searchbox.client.AbstractJestClient;
 import io.searchbox.common.AbstractIntegrationTest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.test.ElasticsearchIntegrationTest;
+import org.elasticsearch.test.ESIntegTestCase;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.util.Map;
  * @author Dogukan Sonmez
  * @author cihat keser
  */
-@ElasticsearchIntegrationTest.ClusterScope(scope = ElasticsearchIntegrationTest.Scope.SUITE, numDataNodes = 1)
+@ESIntegTestCase.ClusterScope(scope = ESIntegTestCase.Scope.SUITE, numDataNodes = 1)
 public class IndexIntegrationTest extends AbstractIntegrationTest {
 
     static final String INDEX = "twitter";
@@ -79,7 +79,7 @@ public class IndexIntegrationTest extends AbstractIntegrationTest {
         createIndex(INDEX);
         assertTrue(client().admin().indices().putMapping(new PutMappingRequest(INDEX)
                 .type(TYPE).source(mapping)).actionGet().isAcknowledged());
-        waitForConcreteMappingsOnAll(INDEX, TYPE, "creationDate");
+        assertConcreteMappingsOnAll(INDEX, TYPE, "creationDate");
 
         DocumentResult result = client.execute(new Index.Builder(source).index(INDEX).type(TYPE).id(id).build());
         assertTrue(result.getErrorMessage(), result.isSucceeded());

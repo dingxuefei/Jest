@@ -22,7 +22,6 @@ public class MultiGet extends GenericResultAbstractAction {
     protected MultiGet(AbstractAction.Builder builder) {
         super(builder);
         setURI(buildURI());
-        setPathToResult("docs/_source");
     }
 
     protected MultiGet(Builder.ByDoc builder) {
@@ -55,6 +54,11 @@ public class MultiGet extends GenericResultAbstractAction {
     }
 
     @Override
+    public String getPathToResult() {
+        return "docs/_source";
+    }
+
+    @Override
     public int hashCode() {
         return new HashCodeBuilder()
                 .appendSuper(super.hashCode())
@@ -73,7 +77,6 @@ public class MultiGet extends GenericResultAbstractAction {
             return false;
         }
 
-        MultiGet rhs = (MultiGet) obj;
         return new EqualsBuilder()
                 .appendSuper(super.equals(obj))
                 .isEquals();

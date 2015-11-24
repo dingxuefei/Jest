@@ -2,7 +2,7 @@ package io.searchbox.cluster;
 
 import io.searchbox.client.JestResult;
 import io.searchbox.common.AbstractIntegrationTest;
-import org.elasticsearch.test.ElasticsearchIntegrationTest;
+import org.elasticsearch.test.ESIntegTestCase;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * @author cihat keser
  */
-@ElasticsearchIntegrationTest.ClusterScope(scope = ElasticsearchIntegrationTest.Scope.SUITE, numDataNodes = 2)
+@ESIntegTestCase.ClusterScope(scope = ESIntegTestCase.Scope.SUITE, numDataNodes = 2)
 public class NodesHotThreadsIntegrationTest extends AbstractIntegrationTest {
 
     @Test
@@ -22,8 +22,8 @@ public class NodesHotThreadsIntegrationTest extends AbstractIntegrationTest {
         assertTrue(result.getErrorMessage(), result.isSucceeded());
 
         assertTrue(result.getJsonString().contains("interval=500ms"));
-        assertTrue("Result should contain info for first node", result.getJsonString().contains("::: [" + firstNode + "]["));
-        assertTrue("Result should contain info for second node", result.getJsonString().contains("::: [" + secondNode + "]["));
+        assertNodePresent(result, firstNode);
+        assertNodePresent(result, secondNode);
     }
 
     @Test
@@ -34,8 +34,8 @@ public class NodesHotThreadsIntegrationTest extends AbstractIntegrationTest {
         JestResult result = client.execute(new NodesHotThreads.Builder().addNode(firstNode).build());
         assertTrue(result.getErrorMessage(), result.isSucceeded());
 
-        assertTrue(result.getJsonString().contains("::: [" + firstNode + "]["));
-        assertFalse(result.getJsonString().contains("::: [" + secondNode + "]["));
+        assertNodePresent(result, firstNode);
+        assertNodeMissing(result, secondNode);
     }
 
     @Test
@@ -51,8 +51,16 @@ public class NodesHotThreadsIntegrationTest extends AbstractIntegrationTest {
 
         String rawJson = result.getJsonString();
         assertTrue(rawJson, rawJson.contains("interval=100ms"));
-        assertTrue(rawJson, rawJson.contains("::: [" + firstNode + "]["));
-        assertFalse(rawJson, rawJson.contains("::: [" + secondNode + "]["));
+        assertNodePresent(result, firstNode);
+        assertNodeMissing(result, secondNode);
+    }
+
+    private void assertNodePresent(JestResult result, String node) {
+        assertTrue(result.getJsonString().contains("::: {" + node + "}{"));
+    }
+
+    private void assertNodeMissing(JestResult result, String node) {
+        assertFalse(result.getJsonString().contains("::: {" + node + "}{"));
     }
 
 }

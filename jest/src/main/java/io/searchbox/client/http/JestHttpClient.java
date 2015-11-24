@@ -1,19 +1,20 @@
 package io.searchbox.client.http;
 
-import com.google.gson.Gson;
 import io.searchbox.action.Action;
 import io.searchbox.client.AbstractJestClient;
-import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
 import io.searchbox.client.JestResultHandler;
 import io.searchbox.client.http.apache.HttpDeleteWithEntity;
 import io.searchbox.client.http.apache.HttpGetWithEntity;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
+import java.io.IOException;
+import java.util.Map.Entry;
+
+import org.apache.http.*;
 import org.apache.http.client.entity.EntityBuilder;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -21,15 +22,13 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Map.Entry;
+import com.google.gson.Gson;
 
 /**
  * @author Dogukan Sonmez
  * @author cihat keser
  */
-public class JestHttpClient extends AbstractJestClient implements JestClient {
+public class JestHttpClient extends AbstractJestClient {
 
     private final static Logger log = LoggerFactory.getLogger(JestHttpClient.class);
 
@@ -47,7 +46,7 @@ public class JestHttpClient extends AbstractJestClient implements JestClient {
         HttpUriRequest request = prepareRequest(clientRequest);
         HttpResponse response = httpClient.execute(request);
 
-        return deserializeResponse(response, clientRequest);
+        return deserializeResponse(response, request, clientRequest);
     }
 
     @Override
@@ -59,7 +58,7 @@ public class JestHttpClient extends AbstractJestClient implements JestClient {
         }
 
         HttpUriRequest request = prepareRequest(clientRequest);
-        asyncClient.execute(request, new DefaultCallback<T>(clientRequest, resultHandler));
+        asyncClient.execute(request, new DefaultCallback<T>(clientRequest, request, resultHandler));
     }
 
     @Override
@@ -111,7 +110,7 @@ public class JestHttpClient extends AbstractJestClient implements JestClient {
             log.debug("HEAD method created based on client request");
         }
 
-        if (httpUriRequest != null && httpUriRequest instanceof HttpEntityEnclosingRequestBase && payload != null) {
+        if (httpUriRequest != null && httpUriRequest instanceof HttpEntityEnclosingRequest && payload != null) {
             EntityBuilder entityBuilder = EntityBuilder.create()
                     .setText(payload)
                     .setContentType(requestContentType);
@@ -120,20 +119,33 @@ public class JestHttpClient extends AbstractJestClient implements JestClient {
                 entityBuilder.gzipCompress();
             }
 
-            ((HttpEntityEnclosingRequestBase) httpUriRequest).setEntity(entityBuilder.build());
+            ((HttpEntityEnclosingRequest) httpUriRequest).setEntity(entityBuilder.build());
         }
 
         return httpUriRequest;
     }
 
-    private <T extends JestResult> T deserializeResponse(HttpResponse response, Action<T> clientRequest) throws IOException {
+    private <T extends JestResult> T deserializeResponse(HttpResponse response, final HttpRequest httpRequest, Action<T> clientRequest) throws IOException {
         StatusLine statusLine = response.getStatusLine();
-        return clientRequest.createNewElasticSearchResult(
-                response.getEntity() == null ? null : EntityUtils.toString(response.getEntity()),
-                statusLine.getStatusCode(),
-                statusLine.getReasonPhrase(),
-                gson
-        );
+        try {
+            return clientRequest.createNewElasticSearchResult(
+                    response.getEntity() == null ? null : EntityUtils.toString(response.getEntity()),
+                    statusLine.getStatusCode(),
+                    statusLine.getReasonPhrase(),
+                    gson
+            );
+        } catch (com.google.gson.JsonSyntaxException e) {
+            for (Header header : response.getHeaders("Content-Type")) {
+                final String mimeType = header.getValue();
+                if (!mimeType.startsWith("application/json")) {
+                    // probably a proxy that responded in text/html
+                    final String message = "Request " + httpRequest.toString() + " yielded " + mimeType
+                            + ", should be json: " + statusLine.toString();
+                    throw new IOException(message, e);
+                }
+            }
+            throw e;
+        }
     }
 
     public CloseableHttpClient getHttpClient() {
@@ -162,10 +174,12 @@ public class JestHttpClient extends AbstractJestClient implements JestClient {
 
     protected class DefaultCallback<T extends JestResult> implements FutureCallback<HttpResponse> {
         private final Action<T> clientRequest;
+        private final HttpRequest request;
         private final JestResultHandler<? super T> resultHandler;
 
-        public DefaultCallback(Action<T> clientRequest, JestResultHandler<? super T> resultHandler) {
+        public DefaultCallback(Action<T> clientRequest, final HttpRequest request, JestResultHandler<? super T> resultHandler) {
             this.clientRequest = clientRequest;
+            this.request = request;
             this.resultHandler = resultHandler;
         }
 
@@ -173,7 +187,7 @@ public class JestHttpClient extends AbstractJestClient implements JestClient {
         public void completed(final HttpResponse response) {
             T jestResult = null;
             try {
-                jestResult = deserializeResponse(response, clientRequest);
+                jestResult = deserializeResponse(response, request, clientRequest);
             } catch (IOException e) {
                 failed(e);
             }

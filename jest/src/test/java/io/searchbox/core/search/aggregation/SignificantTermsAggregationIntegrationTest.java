@@ -5,7 +5,7 @@ import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.elasticsearch.test.ElasticsearchIntegrationTest;
+import org.elasticsearch.test.ESIntegTestCase;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * @author cfstout
  */
-@ElasticsearchIntegrationTest.ClusterScope (scope = ElasticsearchIntegrationTest.Scope.TEST, numDataNodes = 1)
+@ESIntegTestCase.ClusterScope (scope = ESIntegTestCase.Scope.TEST, numDataNodes = 1)
 public class SignificantTermsAggregationIntegrationTest extends AbstractIntegrationTest {
 
     private final String INDEX = "significant_terms_aggregation";
@@ -32,7 +32,7 @@ public class SignificantTermsAggregationIntegrationTest extends AbstractIntegrat
         ).actionGet();
 
         assertTrue(putMappingResponse.isAcknowledged());
-        waitForConcreteMappingsOnAll(INDEX, TYPE, "gender", "favorite_movie");
+        assertConcreteMappingsOnAll(INDEX, TYPE, "gender", "favorite_movie");
 
         index(INDEX, TYPE, null, "{\"gender\":\"male\", \"favorite_movie\": \"300\"}");
         index(INDEX, TYPE, null, "{\"gender\":\"male\", \"favorite_movie\": \"300\"}");
@@ -102,7 +102,7 @@ public class SignificantTermsAggregationIntegrationTest extends AbstractIntegrat
         ).actionGet();
 
         assertTrue(putMappingResponse.isAcknowledged());
-        waitForConcreteMappingsOnAll(INDEX, TYPE, "gender", "favorite_movie");
+        assertConcreteMappingsOnAll(INDEX, TYPE, "gender", "favorite_movie");
 
         index(INDEX, TYPE, null, "{\"gender\":\"male\", \"favorite_movie\": \"300\"}");
         index(INDEX, TYPE, null, "{\"gender\":\"male\", \"favorite_movie\": \"300\"}");
