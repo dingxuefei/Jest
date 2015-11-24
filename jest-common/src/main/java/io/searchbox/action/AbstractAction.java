@@ -1,6 +1,5 @@
 package io.searchbox.action;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
@@ -41,7 +40,6 @@ public abstract class AbstractAction<T extends JestResult> implements Action<T> 
     private final Multimap<String, Object> parameterMap = LinkedHashMultimap.create();
     private final Set<String> cleanApiParameters = new LinkedHashSet<String>();
     private String URI;
-    private String pathToResult;
 
     public AbstractAction() {
     }
@@ -160,11 +158,7 @@ public abstract class AbstractAction<T extends JestResult> implements Action<T> 
 
     @Override
     public String getPathToResult() {
-        return pathToResult;
-    }
-
-    protected void setPathToResult(String pathToResult) {
-        this.pathToResult = pathToResult;
+        return null;
     }
 
     protected String buildURI() {
